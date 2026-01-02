@@ -1,4 +1,4 @@
-export type Axis = 'P' | 'M' | 'S';
+export type Axis = 'PA' | 'MA' | 'SA';
 
 export type SeverityLevel = 'Low' | 'Moderate' | 'High' | 'Critical';
 
@@ -14,7 +14,7 @@ export interface AssessmentAnswers {
 
 export interface AxisScore {
     raw: number;
-    max: number; // usually 55 (11 * 5)
+    max: number;
     severity: SeverityLevel;
 }
 
@@ -22,12 +22,10 @@ export interface AssessmentResult {
     timestamp: string;
     axisScores: Record<Axis, AxisScore>;
     globalSeverityIndex: number;
-    isCrisis: boolean; // S-axis >= 45
+    isCrisis: boolean;
 }
 
 export interface UserState {
     hasCompletedAssessment: boolean;
     lastResult: AssessmentResult | null;
-    // Privacy: we might not store this persistently unless user opts in, 
-    // but for the session we need it.
 }

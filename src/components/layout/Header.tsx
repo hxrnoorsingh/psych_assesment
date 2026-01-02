@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Brain } from 'lucide-react';
 
 export function Header() {
     return (
@@ -6,8 +7,9 @@ export function Header() {
             <div className="container flex h-14 items-center">
                 <div className="mr-4 hidden md:flex">
                     <Link href="/" className="mr-6 flex items-center space-x-2">
+                        <Brain className="h-5 w-5 text-primary" />
                         <span className="hidden font-bold sm:inline-block">
-                            Depth Lens
+                            Learning Assessment
                         </span>
                     </Link>
                     <nav className="flex items-center space-x-6 text-sm font-medium">

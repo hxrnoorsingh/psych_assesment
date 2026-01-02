@@ -1,7 +1,9 @@
 {
-  "name": "clinical",
-  "version": "0.1.0",
+  "name": "psych-assessment",
+  "version": "1.0.0",
   "private": true,
+  "description": "PDM-2 based assessment tool for internet-induced learning difficulties in adolescents",
+  "author": "Harnoor Singh",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

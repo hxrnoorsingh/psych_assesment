@@ -15,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Depth Lens",
-  description: "A psychodynamic, PDM-2–inspired self-assessment tool.",
+  title: "Internet-Induced Learning Difficulties Assessment",
+  description: "A PDM-2 framework-based tool for assessing internet-induced learning difficulties in adolescents aged 12-18. Evaluates Mental Functioning (MA), Personality Patterns (PA), and Symptomatic Distress (SA).",
+  keywords: ["PDM-2", "adolescents", "internet addiction", "learning difficulties", "cyberpsychology", "mental health assessment"],
   icons: {
     icon: "/logo.png",
   },

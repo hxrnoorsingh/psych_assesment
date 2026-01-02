@@ -80,8 +80,8 @@ export function Questionnaire({ questions }: QuestionnaireProps) {
         if (!currentQuestion) return;
         setAnswer(currentQuestion.id, value);
 
-        // Immediate Crisis Trigger for Question S9 (Self-harm)
-        if (currentQuestion.id === 'S9' && value >= 4) {
+        // Immediate Crisis Trigger for Question SA6 (overwhelmed)
+        if (currentQuestion.id === 'SA6' && value >= 4) {
             calculateResult(questions);
             router.push('/results'); // Explicitly push to results for crisis
             return;

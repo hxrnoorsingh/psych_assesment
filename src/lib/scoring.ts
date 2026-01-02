@@ -1,16 +1,20 @@
 import { AssessmentAnswers, Axis, AxisScore, Question, SeverityLevel } from '@/types';
 
+// Scoring ranges adjusted for 20-item questionnaire (7+7+6 questions)
+// MA: 7 questions, max = 35
+// PA: 7 questions, max = 35
+// SA: 6 questions, max = 30
 export const SCORING_RANGES = {
-    LOW: { min: 11, max: 25 },
-    MODERATE: { min: 26, max: 34 },
-    HIGH: { min: 35, max: 44 },
-    CRITICAL: { min: 45, max: 55 },
+    LOW: { min: 0, max: 25 },
+    MODERATE: { min: 26, max: 50 },
+    HIGH: { min: 51, max: 75 },
+    CRITICAL: { min: 76, max: 100 },
 };
 
-export function getSeverityLevel(score: number): SeverityLevel {
-    if (score >= SCORING_RANGES.CRITICAL.min) return 'Critical';
-    if (score >= SCORING_RANGES.HIGH.min) return 'High';
-    if (score >= SCORING_RANGES.MODERATE.min) return 'Moderate';
+export function getSeverityLevel(percentageScore: number): SeverityLevel {
+    if (percentageScore >= SCORING_RANGES.CRITICAL.min) return 'Critical';
+    if (percentageScore >= SCORING_RANGES.HIGH.min) return 'High';
+    if (percentageScore >= SCORING_RANGES.MODERATE.min) return 'Moderate';
     return 'Low';
 }
 
@@ -29,34 +33,37 @@ export function calculateAxisScore(
     axisQuestions.forEach((q) => {
         let value = answers[q.id] || 0;
 
-        // Axis M questions are positive capacities (e.g., "I can calm myself").
-        // High capacity (5) = Low Severity.
-        // Low capacity (1) = High Severity.
-        // We need to invert the score for Severity calculation: 5 -> 1, 1 -> 5.
-        // Formula: 6 - value (assuming 1-5 scale)
-        // Only invert if value is > 0 (answered)
-        if (axis === 'M' && value > 0) {
+        // MA Axis questions measure mental functioning capacities
+        // For MA: High capacity (5) = Low Severity (good functioning)
+        // So we invert: high answers mean good mental functioning = lower distress score
+        if (axis === 'MA' && value > 0) {
             value = 6 - value;
         }
 
         raw += value;
     });
 
+    const max = axisQuestions.length * 5;
+    const percentage = (raw / max) * 100;
+
     return {
         raw,
-        max: axisQuestions.length * 5,
-        severity: getSeverityLevel(raw),
+        max,
+        severity: getSeverityLevel(percentage),
     };
 }
 
 export function calculateGlobalSeverity(
     axisScores: Record<Axis, AxisScore>
 ): number {
-    const p = axisScores.P.raw;
-    const m = axisScores.M.raw;
-    const s = axisScores.S.raw;
+    const pa = axisScores.PA.raw;
+    const ma = axisScores.MA.raw;
+    const sa = axisScores.SA.raw;
 
-    // Formula: (P + M + S) / 3
-    const gsi = (p + m + s) / 3;
-    return parseFloat(gsi.toFixed(1));
+    const totalRaw = pa + ma + sa;
+    const totalMax = axisScores.PA.max + axisScores.MA.max + axisScores.SA.max;
+
+    // Return as percentage (0-100 scale) matching research paper format
+    const gsi = (totalRaw / totalMax) * 100;
+    return parseFloat(gsi.toFixed(2));
 }
