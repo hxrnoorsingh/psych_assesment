@@ -7,6 +7,8 @@ export interface Question {
     direction: 'positive' | 'negative';
 }
 
+export type AssessmentAnswers = Record<string, number>;
+
 export interface AssessmentResult {
     timestamp: string;
     axisScores: Record<Axis, { raw: number; max: number; percentage: number }>;
