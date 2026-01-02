@@ -15,6 +15,7 @@ export function Dashboard() {
     const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         setIsHydrated(true);
     }, []);
 
@@ -43,33 +44,18 @@ export function Dashboard() {
     };
 
     const SCORING_LEGEND = [
-        { label: 'Low', range: '0-25%', color: 'bg-green-500', description: 'Minimal impact on functioning' },
-        { label: 'Moderate', range: '26-50%', color: 'bg-yellow-500', description: 'Some difficulties present' },
-        { label: 'High', range: '51-75%', color: 'bg-orange-500', description: 'Significant impact on learning' },
-        { label: 'Critical', range: '76-100%', color: 'bg-red-500', description: 'Severe impairment detected' },
+        { label: 'Low', range: '11-25', color: 'bg-green-500' },
+        { label: 'Moderate', range: '26-34', color: 'bg-yellow-500' },
+        { label: 'High', range: '35-44', color: 'bg-orange-500' },
+        { label: 'Critical', range: '45-55', color: 'bg-red-500' },
     ];
-
-    const AXIS_LABELS: Record<Axis, { name: string; description: string }> = {
-        MA: {
-            name: 'Mental Functioning (MA)',
-            description: 'Attention, impulse control, and self-reflection capacities'
-        },
-        PA: {
-            name: 'Personality Patterns (PA)',
-            description: 'Maladaptive patterns related to internet use'
-        },
-        SA: {
-            name: 'Symptomatic Distress (SA)',
-            description: 'Anxiety, depression, and emotional dysregulation'
-        },
-    };
 
     return (
         <div className="w-full max-w-6xl mx-auto space-y-8 p-4">
             <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold">Assessment Results</h1>
                 <p className="text-muted-foreground">
-                    Internet-Induced Learning Difficulties Assessment (PDM-2 Framework)
+                    Here is a summary of your reflection.
                 </p>
             </div>
 
@@ -79,9 +65,9 @@ export function Dashboard() {
                         <CardTitle>Global Severity Index</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center justify-center p-6">
-                        <div className="text-5xl font-bold mb-2">{globalSeverityIndex}%</div>
+                        <div className="text-5xl font-bold mb-2">{globalSeverityIndex}</div>
                         <p className="text-sm text-muted-foreground text-center">
-                            Overall impact on learning (0-100% scale)
+                            Overall distress level (1-55 scale)
                         </p>
                     </CardContent>
                 </Card>
@@ -93,11 +79,10 @@ export function Dashboard() {
                     <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {SCORING_LEGEND.map((item) => (
-                                <div key={item.label} className="flex items-start gap-2">
-                                    <div className={`w-3 h-3 rounded-full ${item.color} mt-1 flex-shrink-0`} />
+                                <div key={item.label} className="flex items-center gap-2">
+                                    <div className={`w-3 h-3 rounded-full ${item.color}`} />
                                     <div className="text-sm">
                                         <span className="font-medium">{item.label}:</span> {item.range}
-                                        <p className="text-muted-foreground text-xs">{item.description}</p>
                                     </div>
                                 </div>
                             ))}
@@ -107,21 +92,22 @@ export function Dashboard() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
-                {(['MA', 'PA', 'SA'] as Axis[]).map((axis) => {
+                {(['P', 'M', 'S'] as Axis[]).map((axis) => {
                     const score = axisScores[axis];
                     const percentage = (score.raw / score.max) * 100;
-                    const axisInfo = AXIS_LABELS[axis];
+
+                    let label = '';
+                    if (axis === 'P') label = 'Personality & Relational Patterns';
+                    if (axis === 'M') label = 'Mental Functioning';
+                    if (axis === 'S') label = 'Symptom Distress';
 
                     return (
                         <Card key={axis} className="flex flex-col">
                             <CardHeader className="pb-2">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <CardTitle className="text-lg">{axisInfo.name}</CardTitle>
-                                        <p className="text-xs text-muted-foreground mt-1">{axisInfo.description}</p>
-                                    </div>
+                                <div className="flex justify-between items-center">
+                                    <CardTitle className="text-lg">{label}</CardTitle>
                                     <span className={`px-2 py-1 rounded text-xs font-medium text-white ${getSeverityColor(score.severity)}`}>
-                                        {score.severity}
+                                        {score.severity} Severity
                                     </span>
                                 </div>
                             </CardHeader>
@@ -129,7 +115,6 @@ export function Dashboard() {
                                 <Progress value={percentage} className="h-2" />
                                 <div className="mt-3 flex justify-between text-xs text-muted-foreground">
                                     <span>Score: {score.raw} / {score.max}</span>
-                                    <span>{percentage.toFixed(1)}%</span>
                                 </div>
                             </CardContent>
                         </Card>

@@ -51,16 +51,15 @@ export const useAssessmentStore = create<AssessmentState>()(
             calculateResult: (questions) => {
                 const { answers } = get();
 
-                const paScore = calculateAxisScore(answers, 'PA', questions);
-                const maScore = calculateAxisScore(answers, 'MA', questions);
-                const saScore = calculateAxisScore(answers, 'SA', questions);
+                const pScore = calculateAxisScore(answers, 'P', questions);
+                const mScore = calculateAxisScore(answers, 'M', questions);
+                const sScore = calculateAxisScore(answers, 'S', questions);
 
-                const axisScores = { PA: paScore, MA: maScore, SA: saScore };
+                const axisScores = { P: pScore, M: mScore, S: sScore };
                 const globalSeverityIndex = calculateGlobalSeverity(axisScores);
 
-                // Crisis if SA-axis percentage >= 75% OR if SA6 (overwhelmed) is >= 4
-                const saPercentage = (saScore.raw / saScore.max) * 100;
-                const isCrisis = saPercentage >= 75 || (answers['SA6'] >= 4);
+                // Crisis if S-axis >= 45 OR if S9 (Self-harm) is >= 4
+                const isCrisis = sScore.raw >= 45 || (answers['S9'] >= 4);
 
                 const result: AssessmentResult = {
                     timestamp: new Date().toISOString(),
@@ -73,7 +72,7 @@ export const useAssessmentStore = create<AssessmentState>()(
             },
         }),
         {
-            name: 'learning-assessment-storage',
+            name: 'clinical-assessment-storage',
             storage: createJSONStorage(() => ({
                 getItem: async (name: string) => {
                     if (typeof window === 'undefined') return null;
