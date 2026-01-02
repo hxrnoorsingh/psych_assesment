@@ -18,7 +18,7 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
         <h1 className="text-4xl font-bold text-center sm:text-left">
-          Learning Assessment Tool
+          Internet-Induced Learning Difficulties Assessment
         </h1>
         <p className="text-lg text-center sm:text-left max-w-2xl">
           A PDM-2 framework-based assessment tool designed to evaluate internet-induced learning difficulties in adolescents aged 12-18.

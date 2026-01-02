@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import {
     Brain,
-    activity,
+    Activity,
     HeartCrack,
     Info,
     ChevronRight,
@@ -54,7 +54,7 @@ export function Dashboard() {
             case "MA":
                 return <Brain className="h-5 w-5 text-indigo-500" />;
             case "PA":
-                return <activity className="h-5 w-5 text-violet-500" />; // using activity as placeholder for Activity/Personality
+                return <Activity className="h-5 w-5 text-violet-500" />; // using Activity as placeholder for Activity/Personality
             case "SA":
                 return <HeartCrack className="h-5 w-5 text-rose-500" />;
             default:
