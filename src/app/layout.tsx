@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Depth Lens",
-  description: "A psychodynamic, PDM-2–inspired self-assessment tool.",
+  title: "Learning Assessment Tool",
+  description: "PDM-2 framework-based assessment for internet-induced learning difficulties",
   icons: {
     icon: "/logo.png",
   },
