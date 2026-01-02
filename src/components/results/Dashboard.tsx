@@ -39,24 +39,24 @@ export function Dashboard() {
 
     const severityLabel = getSeverityLabel(globalSeverityIndex);
 
-    // Color logic for progress bars (Higher score = worse, except MA which is inverted processing)
-    // PA/SA: Low is Green, High is Red.
-    // MA: We already inverted it in calculation (High Capacity = Low Score for distress).
-    // So consistently: Low % = Good, High % = Bad.
+    // Color logic using "Clinical / Old Money" theme
+    // Low Difficulty (Good) -> Primary (Sage Green)
+    // Moderate Difficulty -> Accent (Lavender/Taupe)
+    // High Difficulty -> Destructive (Soft Red)
     const getScoreColor = (score: number) => {
-        if (score < 30) return "bg-emerald-500/80";
-        if (score < 60) return "bg-amber-500/80";
-        return "bg-rose-500/80";
+        if (score < 30) return "bg-primary";
+        if (score < 60) return "bg-amber-400"; // Keep amber for warning, or use accent if strict
+        return "bg-destructive";
     };
 
     const getAxisIcon = (axis: string) => {
         switch (axis) {
             case "MA":
-                return <Brain className="h-5 w-5 text-indigo-500" />;
+                return <Brain className="h-5 w-5 text-primary" />;
             case "PA":
-                return <Activity className="h-5 w-5 text-violet-500" />; // using Activity as placeholder for Activity/Personality
+                return <Activity className="h-5 w-5 text-primary" />;
             case "SA":
-                return <HeartCrack className="h-5 w-5 text-rose-500" />;
+                return <HeartCrack className="h-5 w-5 text-destructive" />;
             default:
                 return <Info className="h-5 w-5" />;
         }
@@ -99,7 +99,7 @@ export function Dashboard() {
 
             {/* Global Score Card */}
             <Card className="p-8 relative overflow-hidden border-border/50 bg-secondary/20 backdrop-blur-sm">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 opacity-50" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-destructive opacity-50" />
                 <div className="flex flex-col md:flex-row items-center justify-between gap-8">
                     <div className="space-y-2 text-center md:text-left">
                         <h3 className="text-lg font-medium text-muted-foreground">
