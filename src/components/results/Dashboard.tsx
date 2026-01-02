@@ -1,134 +1,219 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAssessmentStore } from '@/lib/store';
-import { CrisisScreen } from './CrisisScreen';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { Axis } from '@/types';
+import { useAssessmentStore } from "@/lib/store";
+import { Card } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import {
+    Brain,
+    activity,
+    HeartCrack,
+    Info,
+    ChevronRight,
+    RefreshCw,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
+import Link from "next/link";
 
 export function Dashboard() {
-    const router = useRouter();
-    const { result, isCompleted, reset } = useAssessmentStore();
-    const [isHydrated, setIsHydrated] = useState(false);
+    const result = useAssessmentStore((state) => state.result);
+    const reset = useAssessmentStore((state) => state.reset);
 
-    useEffect(() => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        setIsHydrated(true);
-    }, []);
-
-    useEffect(() => {
-        if (isHydrated && !isCompleted) {
-            router.push('/assessment');
-        }
-    }, [isHydrated, isCompleted, router]);
-
-    if (!isHydrated || !result) return null;
-
-    if (result.isCrisis) {
-        return <CrisisScreen />;
-    }
+    if (!result) return null;
 
     const { axisScores, globalSeverityIndex } = result;
 
-    const getSeverityColor = (severity: string) => {
-        switch (severity) {
-            case 'Low': return 'bg-green-500';
-            case 'Moderate': return 'bg-yellow-500';
-            case 'High': return 'bg-orange-500';
-            case 'Critical': return 'bg-red-500';
-            default: return 'bg-primary';
+    // Determine severity label based on global index percentage
+    const getSeverityLabel = (score: number) => {
+        if (score < 20) return "Healthy Functioning";
+        if (score < 40) return "Mild Difficulty";
+        if (score < 60) return "Moderate Difficulty";
+        if (score < 80) return "Significant Difficulty";
+        return "Severe Difficulty";
+    };
+
+    const severityLabel = getSeverityLabel(globalSeverityIndex);
+
+    // Color logic for progress bars (Higher score = worse, except MA which is inverted processing)
+    // PA/SA: Low is Green, High is Red.
+    // MA: We already inverted it in calculation (High Capacity = Low Score for distress).
+    // So consistently: Low % = Good, High % = Bad.
+    const getScoreColor = (score: number) => {
+        if (score < 30) return "bg-emerald-500/80";
+        if (score < 60) return "bg-amber-500/80";
+        return "bg-rose-500/80";
+    };
+
+    const getAxisIcon = (axis: string) => {
+        switch (axis) {
+            case "MA":
+                return <Brain className="h-5 w-5 text-indigo-500" />;
+            case "PA":
+                return <activity className="h-5 w-5 text-violet-500" />; // using activity as placeholder for Activity/Personality
+            case "SA":
+                return <HeartCrack className="h-5 w-5 text-rose-500" />;
+            default:
+                return <Info className="h-5 w-5" />;
         }
     };
 
-    const SCORING_LEGEND = [
-        { label: 'Low', range: '11-25', color: 'bg-green-500' },
-        { label: 'Moderate', range: '26-34', color: 'bg-yellow-500' },
-        { label: 'High', range: '35-44', color: 'bg-orange-500' },
-        { label: 'Critical', range: '45-55', color: 'bg-red-500' },
+    const axesData = [
+        {
+            key: "MA",
+            title: "Mental Functioning",
+            description:
+                "Capacities for attention, impulse control, and self-reflection.",
+            score: axisScores.MA.percentage,
+        },
+        {
+            key: "PA",
+            title: "Personality Patterns",
+            description:
+                "Enduring patterns of thinking and relating, often affected by internet overuse.",
+            score: axisScores.PA.percentage,
+        },
+        {
+            key: "SA",
+            title: "Symptomatic Distress",
+            description:
+                "Subjective experiences of anxiety, depression, and emotional dysregulation.",
+            score: axisScores.SA.percentage,
+        },
     ];
 
     return (
-        <div className="w-full max-w-6xl mx-auto space-y-8 p-4">
-            <div className="text-center space-y-2">
-                <h1 className="text-3xl font-bold">Assessment Results</h1>
-                <p className="text-muted-foreground">
-                    Here is a summary of your reflection.
+        <div className="space-y-8 w-full max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+            {/* Header Section */}
+            <div className="text-center space-y-4">
+                <h2 className="text-3xl font-bold tracking-tight">Assessment Results</h2>
+                <p className="text-muted-foreground max-w-2xl mx-auto">
+                    Here is an analysis of your current psychological functioning based on the
+                    PDM-2 framework. These scores reflect the impact of internet usage on learning and well-being.
                 </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
-                <Card className="md:col-span-1">
-                    <CardHeader>
-                        <CardTitle>Global Severity Index</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex flex-col items-center justify-center p-6">
-                        <div className="text-5xl font-bold mb-2">{globalSeverityIndex}</div>
-                        <p className="text-sm text-muted-foreground text-center">
-                            Overall distress level (1-55 scale)
-                        </p>
-                    </CardContent>
-                </Card>
-
-                <Card className="md:col-span-2">
-                    <CardHeader>
-                        <CardTitle className="text-lg">Understanding Your Scores</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {SCORING_LEGEND.map((item) => (
-                                <div key={item.label} className="flex items-center gap-2">
-                                    <div className={`w-3 h-3 rounded-full ${item.color}`} />
-                                    <div className="text-sm">
-                                        <span className="font-medium">{item.label}:</span> {item.range}
-                                    </div>
-                                </div>
-                            ))}
+            {/* Global Score Card */}
+            <Card className="p-8 relative overflow-hidden border-border/50 bg-secondary/20 backdrop-blur-sm">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500 opacity-50" />
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                    <div className="space-y-2 text-center md:text-left">
+                        <h3 className="text-lg font-medium text-muted-foreground">
+                            Global Impact Index
+                        </h3>
+                        <div className="text-5xl font-extrabold tracking-tighter">
+                            {globalSeverityIndex}%
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
+                        <div className="inline-flex items-center px-3 py-1 rounded-full bg-background border text-sm font-medium">
+                            {severityLabel}
+                        </div>
+                    </div>
 
+                    <div className="flex-1 w-full max-w-md space-y-2">
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                            <span>Resilient</span>
+                            <span>Impacted</span>
+                        </div>
+                        <div className="h-4 w-full bg-secondary rounded-full overflow-hidden">
+                            <motion.div
+                                className="h-full bg-primary"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${globalSeverityIndex}%` }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                            />
+                        </div>
+                        <p className="text-xs text-right text-muted-foreground pt-1">
+                            Higher percentage indicates greater difficulty.
+                        </p>
+                    </div>
+                </div>
+            </Card>
+
+            {/* Axis Cards */}
             <div className="grid gap-6 md:grid-cols-3">
-                {(['P', 'M', 'S'] as Axis[]).map((axis) => {
-                    const score = axisScores[axis];
-                    const percentage = (score.raw / score.max) * 100;
-
-                    let label = '';
-                    if (axis === 'P') label = 'Personality & Relational Patterns';
-                    if (axis === 'M') label = 'Mental Functioning';
-                    if (axis === 'S') label = 'Symptom Distress';
-
-                    return (
-                        <Card key={axis} className="flex flex-col">
-                            <CardHeader className="pb-2">
-                                <div className="flex justify-between items-center">
-                                    <CardTitle className="text-lg">{label}</CardTitle>
-                                    <span className={`px-2 py-1 rounded text-xs font-medium text-white ${getSeverityColor(score.severity)}`}>
-                                        {score.severity} Severity
-                                    </span>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex-1">
-                                <Progress value={percentage} className="h-2" />
-                                <div className="mt-3 flex justify-between text-xs text-muted-foreground">
-                                    <span>Score: {score.raw} / {score.max}</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    );
-                })}
+                {axesData.map((axis) => (
+                    <Card
+                        key={axis.key}
+                        className="p-6 flex flex-col gap-4 border-border/40 hover:border-border/80 transition-all hover:shadow-md"
+                    >
+                        <div className="flex items-start justify-between">
+                            <div className="p-2 rounded-lg bg-background border">
+                                {getAxisIcon(axis.key)}
+                            </div>
+                            <span className="text-2xl font-bold">{axis.score}%</span>
+                        </div>
+                        <div className="space-y-1">
+                            <h4 className="font-semibold">{axis.title}</h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed h-10">
+                                {axis.description}
+                            </p>
+                        </div>
+                        <div className="mt-auto pt-4 space-y-2">
+                            <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                                <motion.div
+                                    className={`h-full ${getScoreColor(axis.score)}`}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${axis.score}%` }}
+                                    transition={{ duration: 0.8, delay: 0.2 }}
+                                />
+                            </div>
+                        </div>
+                    </Card>
+                ))}
             </div>
 
-            <div className="flex justify-center pt-8">
-                <Button onClick={() => {
-                    reset();
-                    router.push('/assessment');
-                }} variant="outline">
-                    Retake Assessment
-                </Button>
+            {/* Interpretation & Resources */}
+            <div className="grid gap-6 md:grid-cols-2">
+                <Card className="p-6 border-border/40">
+                    <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <Info className="h-4 w-4" /> Understanding Your Scores
+                    </h3>
+                    <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value="item-1">
+                            <AccordionTrigger>What do these scores mean?</AccordionTrigger>
+                            <AccordionContent className="text-muted-foreground text-sm leading-relaxed">
+                                Scores represent the 'level of difficulty' or distress in each area.
+                                <br />
+                                <br />
+                                <strong>0-30%:</strong> Healthy / Adaptive Functioning.
+                                <br />
+                                <strong>31-60%:</strong> Mild to Moderate challenges.
+                                <br />
+                                <strong>60%+:</strong> Significant impact requiring attention.
+                            </AccordionContent>
+                        </AccordionItem>
+                        <AccordionItem value="item-2">
+                            <AccordionTrigger>How is this calculated?</AccordionTrigger>
+                            <AccordionContent className="text-muted-foreground text-sm leading-relaxed">
+                                Based on your responses to the 20-item PDM-2 questionnaire. Mental functioning capacities (MA) are inverted, so a high difficulty score means lower capacity.
+                            </AccordionContent>
+                        </AccordionItem>
+                    </Accordion>
+                </Card>
+
+                <Card className="p-6 border-border/40 flex flex-col justify-center gap-4 bg-primary/5">
+                    <div className="space-y-2">
+                        <h3 className="font-semibold">Next Steps</h3>
+                        <p className="text-sm text-muted-foreground">
+                            Consider discussing these results with a school counselor or mental
+                            health professional to develop strategies for balanced internet use.
+                        </p>
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <Button variant="outline" className="flex-1" onClick={reset}>
+                            <RefreshCw className="mr-2 h-4 w-4" /> Retake
+                        </Button>
+                        <Button className="flex-1" asChild>
+                            <Link href="/resources">
+                                View Resources <ChevronRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                    </div>
+                </Card>
             </div>
         </div>
     );

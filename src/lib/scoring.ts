@@ -1,62 +1,44 @@
-import { AssessmentAnswers, Axis, AxisScore, Question, SeverityLevel } from '@/types';
+import { AssessmentResult, Question, Axis } from '@/types';
 
+// Scoring ranges based on 20-item research questionnaire
+// PA: 7 items, MA: 7 items, SA: 6 items
 export const SCORING_RANGES = {
-    LOW: { min: 11, max: 25 },
-    MODERATE: { min: 26, max: 34 },
-    HIGH: { min: 35, max: 44 },
-    CRITICAL: { min: 45, max: 55 },
+    PA: { min: 7, max: 35 }, // 7 * 5
+    MA: { min: 7, max: 35 }, // 7 * 5
+    SA: { min: 6, max: 30 }, // 6 * 5
 };
 
-export function getSeverityLevel(score: number): SeverityLevel {
-    if (score >= SCORING_RANGES.CRITICAL.min) return 'Critical';
-    if (score >= SCORING_RANGES.HIGH.min) return 'High';
-    if (score >= SCORING_RANGES.MODERATE.min) return 'Moderate';
-    return 'Low';
-}
+export function calculateAxisScore(answers: Record<string, number>, axis: Axis, questions: Question[]) {
+    const axisQuestions = questions.filter(q => q.axis === axis);
+    let rawScore = 0;
 
-export function calculateAxisScore(
-    answers: AssessmentAnswers,
-    axis: Axis,
-    questions: Question[]
-): AxisScore {
-    const axisQuestions = questions.filter((q) => q.axis === axis);
-
-    if (axisQuestions.length === 0) {
-        return { raw: 0, max: 0, severity: 'Low' };
-    }
-
-    let raw = 0;
-    axisQuestions.forEach((q) => {
+    axisQuestions.forEach(q => {
         let value = answers[q.id] || 0;
 
-        // Axis M questions are positive capacities (e.g., "I can calm myself").
-        // High capacity (5) = Low Severity.
-        // Low capacity (1) = High Severity.
-        // We need to invert the score for Severity calculation: 5 -> 1, 1 -> 5.
-        // Formula: 6 - value (assuming 1-5 scale)
-        // Only invert if value is > 0 (answered)
-        if (axis === 'M' && value > 0) {
+        // MA Axis questions measure mental functioning capacities
+        // For MA: High capacity (5) = Low Severity (good functioning)
+        // So we invert: high answers mean good mental functioning = lower distress score
+        if (axis === 'MA' && value > 0) {
             value = 6 - value;
         }
 
-        raw += value;
+        rawScore += value;
     });
 
+    const range = SCORING_RANGES[axis];
+    // Calculate percentage (0-100)
+    // (Raw - Min) / (Max - Min) * 100
+    const percentage = Math.round(((rawScore - range.min) / (range.max - range.min)) * 100);
+
     return {
-        raw,
-        max: axisQuestions.length * 5,
-        severity: getSeverityLevel(raw),
+        raw: rawScore,
+        max: range.max,
+        percentage: Math.max(0, Math.min(100, percentage))
     };
 }
 
-export function calculateGlobalSeverity(
-    axisScores: Record<Axis, AxisScore>
-): number {
-    const p = axisScores.P.raw;
-    const m = axisScores.M.raw;
-    const s = axisScores.S.raw;
-
-    // Formula: (P + M + S) / 3
-    const gsi = (p + m + s) / 3;
-    return parseFloat(gsi.toFixed(1));
+export function calculateGlobalSeverity(axisScores: Record<Axis, { percentage: number }>) {
+    const { PA, MA, SA } = axisScores;
+    // Simple average of percentages
+    return Math.round((PA.percentage + MA.percentage + SA.percentage) / 3);
 }

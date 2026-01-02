@@ -1,48 +1,34 @@
-import { Axis, Question } from '@/types';
+import { Question, Axis } from '@/types';
+import fs from 'fs';
+import path from 'path';
 
-export function parseQuestions(markdown: string): Question[] {
-    const questions: Question[] = [];
-    const lines = markdown.split('\n');
-    let currentAxis: Axis | null = null;
-
-    for (const line of lines) {
-        const trimmed = line.trim();
-
-        // Check for Axis header
-        // Format: "## Axis P: Personality & Relational Patterns"
-        const axisMatch = trimmed.match(/^## Axis ([PMS]):/);
-        if (axisMatch) {
-            currentAxis = axisMatch[1] as Axis;
-            continue;
-        }
-
-        // Check for Question
-        // Format: "1. Question text"
-        const questionMatch = trimmed.match(/^(\d+)\.\s+(.+)/);
-        if (questionMatch && currentAxis) {
-            const id = `${currentAxis}${questionMatch[1]}`; // e.g., P1, M2
-            questions.push({
-                id,
-                text: questionMatch[2],
-                axis: currentAxis,
-            });
-        }
-    }
-
-    return questions;
+export async function getQuestions(): Promise<Question[]> {
+    const filePath = path.join(process.cwd(), 'content', 'questions.md');
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    return parseQuestions(fileContent);
 }
 
-// Helper to fetch and parse (client-side or server-side)
-export async function loadQuestions(): Promise<Question[]> {
-    // In a real app, we might import the file content via fs (server) or fetch (client)
-    // Since we are using Next.js App Router, we can read this on the server.
-    // But for client components, we might need an API route or pass it as props.
-    // For now, let's assume we pass the markdown content to this function or fetch it.
+export function parseQuestions(markdown: string): Question[] {
+    const lines = markdown.split('\n');
+    const questions: Question[] = [];
+    let currentAxis: Axis | null = null;
 
-    // If we want to import it as a string (requires loader config) or just fetch it from public.
-    // Let's assume we fetch it from a public URL or API route.
-    // But wait, I put it in `content/questions.md` (root).
-    // I can read it on the server in a Server Component and pass it down.
+    lines.forEach((line) => {
+        line = line.trim();
+        if (line.startsWith('## Axis PA')) currentAxis = 'PA';
+        else if (line.startsWith('## Axis MA')) currentAxis = 'MA';
+        else if (line.startsWith('## Axis SA')) currentAxis = 'SA';
+        else if (line.match(/^\d+\./) && currentAxis) {
+            const text = line.replace(/^\d+\.\s*/, '');
+            const id = `${currentAxis}${questions.filter((q) => q.axis === currentAxis).length + 1}`;
+            questions.push({
+                id,
+                text,
+                axis: currentAxis,
+                direction: 'positive', // Can be enhanced if needed
+            });
+        }
+    });
 
-    return []; // Placeholder, actual loading depends on usage context
+    return questions;
 }
