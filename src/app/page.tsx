@@ -18,10 +18,10 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
         <h1 className="text-4xl font-bold text-center sm:text-left">
-          Depth Lens
+          Learning Assessment Tool
         </h1>
         <p className="text-lg text-center sm:text-left max-w-2xl">
-          A psychodynamic, PDM-2–inspired self-assessment tool to help you reflect on relational patterns, mental functioning, and emotional distress.
+          A PDM-2 framework-based assessment tool designed to evaluate internet-induced learning difficulties in adolescents aged 12-18.
         </p>
         <div className="flex gap-4 items-center flex-col sm:flex-row">
           <Dialog>
